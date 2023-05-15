@@ -5,13 +5,14 @@
 
 <h3>About Usage</h3>
 <p>If you want to examine the project, you can download the files to your computer and edit the codes if you wish.</p>
+Also you can play on (http://foodgame.unaux.com/).
 
 <h3>Prerequisites</h3>
 <p>You can use the existing notepad on your computer to edit the codes or, as a more professional option, 
   Visual Studio Code and the existing browser on your computer to run it. Just remember to check the location
   on your own computer when specifying the path of the .png files.</p>
 
-<h3>Used technologies</h3>
+<h3>Used Technologies</h3>
 <p>HTML5- Layout of the web page
 CSS- The design of the page
 Used in Javascript-Game functions
