@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport"/>
+            <style>
+                canvas 
+                {
+                    border:2px dashed #d3d3d3;
+                    background-color: #CCFF99;
+                    padding:10px;
+                    position: absolute;
+                    left:250px;
+                }
+                div{
+                    width: 300px;
+                    height: 300px;  
+                    border:3px dashed #d3d3d3;
+                    position: absolute;
+                    top:150px;
+                    right: 250px;
+                    padding:50px;
+
+                }
+                h1{ color: brown; font-weight: bold;}
+                h2{ color: green;}
+            </style>
+    </head>
+
+    <body onload="oyunBaslat()">
+        
+        <script>
+            
+            var yazi;
+            var zarar=0, yarar=0;
+            var yararliYiyecek=0;
+            var oyunBitir = false;
+            var aburCuburlar = [];
+            var meyveler = [];
+            var elma = new Image();
+            elma.src = "elma.png";
+            var patates = new Image();
+            patates.src = "patates.png";
+            var insan=new Image();
+            insan.src = "insan.png";
+            var karakter;
+            var yemekler = [];
+            
+            function oyunBaslat() {
+
+                karakter = new component(60, 100, "#FFE4C4", 150, 600,"insan");//insan
+                yazi = new component("30px", "Consolas", "black", 40, 40, "text");
+                myGameArea.start();
+                
+            }
+
+            var myGameArea = {
+                canvas : document.createElement("canvas"),
+                start : function() {
+                    //tuval ayarlamaları
+                    this.canvas.width = 400;
+                    this.canvas.height = 700;
+                    this.context = this.canvas.getContext("2d");
+                    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                    this.interval = setInterval(updateGameArea, 20);
+                    this.frameNo = 0;
+                    //tus fonksiyonları icin event
+                    window.addEventListener('keydown', function (e) {
+                        myGameArea.key = e.keyCode;
+                    })
+                    window.addEventListener('keyup', function (e) {
+                        myGameArea.key = false;
+                    })
+                },//oyun kontrolleri için fonksiyonlar
+                clear : function() {
+                    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                },
+                stop : function() {
+                    clearInterval(this.interval);
+                }
+
+            }
+            
+            function component(width, height, color, x, y, type) {
+                //oyun bilesenleri icin ozellikler belirlenir
+                this.type = type;
+                this.gamearea = myGameArea;
+                this.width = width;
+                this.height = height;
+                this.speedX = 0;
+                this.speedY = 0;
+                this.x = x;
+                this.y = y;    
+                this.update = function(){
+                    ctx = myGameArea.context;
+                    if (this.type == "text") {
+                        ctx.font = this.width + " " + this.height;
+                        ctx.fillStyle = color;
+                        ctx.fillText(this.text, this.x, this.y);
+                    }else if (this.type == "elma") {
+                        ctx.drawImage(elma,this.x,this.y,this.width, this.height);
+                    }
+                    else if (this.type == "patates") {
+                        ctx.drawImage(patates,this.x,this.y,this.width, this.height);
+                    }
+                    else if (this.type == "insan") {
+                        ctx.drawImage(insan,this.x,this.y,this.width, this.height);
+                    }
+                    else {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                    }
+                }
+                this.pozAyar = function() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                }
+                this.yemekYe = function(yiyecek) {
+                    
+                    var insanSol = this.x;
+                    var insanSag = this.x + (this.width);
+                    var insanUst = this.y;
+                    var insanAlt = this.y + (this.height);
+                    var yiyecekSol = yiyecek.x;
+                    var yiyecekSag = yiyecek.x + (yiyecek.width);
+                    var yiyecekUst = yiyecek.y;
+                    var yiyecekAlt = yiyecek.y + (yiyecek.height);
+                    
+
+                    if ((insanAlt < yiyecekUst) || (insanUst > yiyecekAlt) || (insanSag < yiyecekSol) || (insanSol > yiyecekSag)) 
+                    {
+                        oyunBitir = false;
+                    }
+                    else
+                    {
+                        zarar+=1;
+                        yiyecek.clearRect();
+                        if(zarar == 3)
+                        {
+                            oyunBitir = true;
+                        }
+                    }
+                    
+                    return oyunBitir;
+                }
+            
+            }
+            function zararYaz()
+            {//zarar sayisini yazar
+                yazi.text = "KACAMAK: " + zarar;
+                yazi.update();
+            }
+
+            function updateGameArea() {
+                //patates ve elmalar icin carpisma kontrolu
+                for (i = 0; i < aburCuburlar.length; i += 1) {
+                    if (karakter.yemekYe(aburCuburlar[i])) {
+                    myGameArea.stop();
+                    return;
+                    }
+                }
+                
+                myGameArea.clear();
+                myGameArea.frameNo += 1;
+                tusKontrolu();
+                karakter.update();
+                yemekGonder();
+                zararYaz();
+            }
+
+
+            function yemekGonder()
+            {
+                
+                var x, y;
+                if (myGameArea.frameNo == 1 || everyinterval(40)) {
+                    //yatay eksende rastgele konumlara patates ve elma atama
+                    y = myGameArea.canvas.height;
+                    var rstgYatayNokta = Math.floor(Math.random() * 350);
+                    aburCuburlar.push(new component(70, 40, "yellow", rstgYatayNokta, 50, "patates"));//patates icin
+                    yemekler.push(aburCuburlar.length-1);
+                }
+                if(everyinterval(60))//elma icin
+                {
+                    rstgYatayNokta = Math.floor(Math.random() * 350);
+                    meyveler.push(new component(45, 45, "red",rstgYatayNokta, 50,"elma"));
+                    yemekler.push(meyveler.length-1);
+                }
+                
+                //patates hız kontrolu
+                for (i = 0; i < aburCuburlar.length; i += 1) {
+                    aburCuburlar[i].y += 5;
+                    aburCuburlar[i].update();
+                
+                }
+                //elma hız kontrolu
+                for (j = 0; j < meyveler.length; j += 1) {
+                    meyveler[j].y += 7;
+                    meyveler[j].update();
+                
+                }
+            }
+
+
+            function tusKontrolu()
+            {
+                //yon tuslari ile karakter nesnesinin hareket kontrolu ve tusa basildigi kadar calistirir 
+                karakter.pozAyar();
+                karakter.speedX = 0;
+                karakter.speedY = 0;
+                if (myGameArea.key && myGameArea.key == 37) {karakter.speedX = -8; }
+                if (myGameArea.key && myGameArea.key == 39) {karakter.speedX = 8; }
+                
+            }
+            
+            function everyinterval(n) {
+                if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+                return false;
+            }
+        </script>
+        
+        <div>
+        <p>
+            <h1>Oyun Nasıl Oynanır ?</h1>
+            <h2>Sadece sağ ve sol yön tuşlarını kullanmalısınız. Patates kızartmasından kaçmak, meyve yemek oyunun temel amacıdır. Maksimum 3 aburcuburda oyun biter. 7 adet elma
+            yenirse 1 aburcubur silinir.</h2>
+        </p>
+        </div>        
+    </body>
+</html>
